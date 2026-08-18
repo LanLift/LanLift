@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b1220">
+<title>LanLift 遠端傳輸</title>
+<style>
+  :root { color-scheme: dark; --bg:#0b1220; --panel:#141e30; --line:#26354d; --ink:#edf4ff; --muted:#9dafc7; --accent:#4fd1c5; --accent2:#62a7ff; --danger:#ff7b8e; }
+  * { box-sizing: border-box; } body { margin:0; min-height:100vh; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; color:var(--ink); background:radial-gradient(1000px 600px at 15% -10%,#223b71 0%,transparent 52%),var(--bg); }
+  main { max-width:680px; margin:0 auto; padding:calc(28px + env(safe-area-inset-top)) 18px calc(32px + env(safe-area-inset-bottom)); }
+  header { display:flex; align-items:center; gap:12px; margin:0 0 28px; } .mark { width:39px; height:39px; display:grid; place-items:center; border-radius:13px; color:#05242b; background:linear-gradient(135deg,var(--accent),#99f6e4); font-weight:900; font-size:19px; box-shadow:0 9px 28px #48d1c54a; } h1 { font-size:20px; margin:0; letter-spacing:-.3px; } .subtitle { margin:4px 0 0; font-size:13px; color:var(--muted); }
+  .card { background:#121d2eea; border:1px solid var(--line); border-radius:20px; padding:22px; box-shadow:0 20px 60px #00000030; margin-bottom:14px; } h2 { font-size:20px; margin:0 0 9px; letter-spacing:-.3px; } p { color:var(--muted); line-height:1.55; margin:0 0 16px; } label { display:block; color:#c7d4e7; font-size:13px; font-weight:600; margin:17px 0 7px; } input[type="text"] { width:100%; border:1px solid #31425c; background:#0b1422; border-radius:12px; color:var(--ink); padding:13px; font-size:16px; outline:none; text-transform:uppercase; } input:focus { border-color:var(--accent2); box-shadow:0 0 0 3px #62a7ff25; }
+  button, .file-label { width:100%; border:0; cursor:pointer; border-radius:12px; font:inherit; font-weight:750; padding:13px 16px; margin-top:16px; text-align:center; background:linear-gradient(135deg,var(--accent),#78e7df); color:#05242b; } button:disabled { cursor:not-allowed; opacity:.56; } .file-label { display:block; background:#1d2e47; color:#dbeafe; border:1px solid #395273; } .file-label input { display:none; } .secondary { background:#1d2e47; color:#dbeafe; border:1px solid #395273; }
+  .hidden { display:none !important; } .status { text-align:center; padding:22px 0 4px; } .spinner { width:32px; height:32px; border:3px solid #294160; border-top-color:var(--accent); border-radius:50%; margin:0 auto 16px; animation:spin 1s linear infinite; } @keyframes spin { to { transform:rotate(360deg); } }
+  .files { display:grid; gap:10px; margin:14px 0; } .file-row { display:flex; align-items:center; justify-content:space-between; gap:12px; background:#0d1726; border:1px solid #263953; border-radius:13px; padding:12px 13px; } .file-name { min-width:0; font-size:14px; font-weight:650; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; } .file-size { display:block; font-size:12px; font-weight:400; color:var(--muted); margin-top:3px; } a.download { flex:0 0 auto; color:#091724; text-decoration:none; background:#b7e9ff; padding:8px 10px; border-radius:9px; font-size:12px; font-weight:800; }
+  .bar { height:7px; border-radius:99px; background:#263750; overflow:hidden; margin-top:10px; } .bar > i { display:block; height:100%; width:0%; background:linear-gradient(90deg,var(--accent),var(--accent2)); transition:width .18s; }
+  .error { color:#ffc0c9; background:#3d1f2a; border:1px solid #704052; border-radius:12px; padding:11px 13px; font-size:13px; margin-top:14px; } .foot { text-align:center; font-size:12px; color:#70839e; margin:21px 4px 0; line-height:1.5; }
+</style>
+</head>
+<body>
+<main>
+<header><div class="mark">L</div><div><h1>LanLift</h1><p class="subtitle">私人遠端傳輸</p></div></header>
+
+<section id="screen-join" class="card">
+  <h2>加入遠端傳輸</h2>
+  <p>請輸入對方 LanLift 畫面上顯示的 6 位數房間代碼。連線建立後可雙向傳送檔案。</p>
+  <label for="room-code">房間代碼</label><input id="room-code" type="text" maxlength="6" autocomplete="off" placeholder="例如：A1B2C3">
+  <label for="device-name">你的裝置名稱</label><input id="device-name" type="text" maxlength="48" autocomplete="name" placeholder="例如：小明的 iPhone">
+  <form id="join-form"><button type="submit">送出連線請求</button></form>
+  <div id="error-message" class="error hidden"></div>
+</section>
+
+<section id="screen-waiting" class="card hidden"><div class="status"><div class="spinner"></div><h2>等待主機核准</h2><p id="peer-status">請在對方 LanLift 畫面中允許此裝置。</p></div></section>
+
+<section id="screen-connected" class="hidden">
+  <div class="card">
+    <h2>傳送檔案</h2><p id="peer-status">安全通道已建立。</p>
+    <label class="file-label">選取要傳送的檔案<input id="file-picker" type="file" multiple></label>
+    <div class="bar"><i id="upload-bar"></i></div>
+  </div>
+  <div class="card">
+    <h2>接收的檔案</h2><div id="received-list" class="files"><p>尚未收到任何檔案。</p></div>
+    <div class="bar"><i id="progress-bar"></i></div>
+    <button id="leave-btn" class="secondary" type="button">結束連線</button>
+  </div>
+  <div id="connected-error" class="error hidden"></div>
+</section>
+
+<p class="foot">檔案以端對端加密傳送，中繼伺服器無法讀取內容。連線逾時或結束後，房間代碼立即失效。</p>
+</main>
+<script src="/remote-web.js"></script>
+</body>
+</html>

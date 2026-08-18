@@ -8,10 +8,10 @@ let toastTimer = null;
 let showAllFiles = false;
 
 function formatBytes(value) {
-  if (!Number.isFinite(value)) return '—';
-  if (value < 1024) return `${value} B`;
-  if (value < 1024 ** 2) return `${(value / 1024).toFixed(1)} KB`;
-  if (value < 1024 ** 3) return `${(value / 1024 ** 2).toFixed(1)} MB`;
+  if (!Number.isFinite(value)) {return '—';}
+  if (value < 1024) {return `${value} B`;}
+  if (value < 1024 ** 2) {return `${(value / 1024).toFixed(1)} KB`;}
+  if (value < 1024 ** 3) {return `${(value / 1024 ** 2).toFixed(1)} MB`;}
   return `${(value / 1024 ** 3).toFixed(2)} GB`;
 }
 
@@ -29,10 +29,10 @@ function formatRemaining(remainingMs) {
 }
 
 function updateCountdown() {
-  if (!state?.active) return;
+  if (!state?.active) {return;}
   const remaining = state.expiresAt - Date.now();
   $('countdown').textContent = formatRemaining(remaining);
-  if (remaining <= 0) $('countdown').textContent = '已過期';
+  if (remaining <= 0) {$('countdown').textContent = '已過期';}
 }
 
 function emptyNote(text) {
@@ -129,30 +129,73 @@ function renderPage() {
   $('pageSideDescription').textContent = remote ? '選擇並管理自己的訊號與 TURN 伺服器設定。' : '檔案在同一個 Wi‑Fi 網路內直接傳送，不經過雲端。';
 }
 
+function renderRemote(next) {
+  const remote = next || {
+    active: false,
+    roomCode: null,
+    connected: false,
+    transport: null,
+    secured: false,
+    peers: [],
+    received: [],
+  };
+  $('remoteIdle').classList.toggle('hidden', Boolean(remote.active));
+  $('remoteActive').classList.toggle('hidden', !remote.active);
+  if (!remote.active) {return;}
+  $('remoteRoomCode').textContent = remote.roomCode || '------';
+  $('remoteTransport').textContent = !remote.secured
+    ? '等待行動裝置加入並核准…'
+    : (remote.transport === 'p2p' ? '傳輸通道：點對點直連（WebRTC）' : '傳輸通道：安全中繼（端對端加密）');
+  const container = $('remotePeers');
+  container.replaceChildren();
+  if (!remote.peers?.length) { container.append(emptyNote('尚未有裝置加入。')); return; }
+  for (const peer of remote.peers) {
+    const row = document.createElement('div'); row.className = 'client-row';
+    const icon = document.createElement('div'); icon.className = 'client-symbol'; icon.textContent = peer.state === 'approved' ? '✓' : '⌁';
+    const meta = document.createElement('div'); meta.className = 'client-meta';
+    const name = document.createElement('div'); name.className = 'client-name'; name.textContent = peer.name;
+    const detail = document.createElement('span'); detail.className = 'client-info'; detail.textContent = peer.state === 'approved' ? '已核准，可雙向傳檔' : (peer.state === 'rejected' ? '已拒絕' : '等待你的核准');
+    meta.append(name, detail); row.append(icon, meta);
+    if (peer.state === 'pending') {
+      const actions = document.createElement('div'); actions.className = 'client-actions';
+      const allow = document.createElement('button'); allow.className = 'approve-btn'; allow.textContent = '允許'; allow.addEventListener('click', () => window.lanlift.approveRemote(peer.id, true));
+      const deny = document.createElement('button'); deny.className = 'reject-btn'; deny.textContent = '拒絕'; deny.addEventListener('click', () => window.lanlift.approveRemote(peer.id, false));
+      actions.append(allow, deny); row.append(actions);
+    }
+    container.append(row);
+  }
+}
+
 function render(next) {
   state = next;
   const running = Boolean(state?.server?.port);
   $('serviceStatus').textContent = running ? `區網服務已在連接埠 ${state.server.port} 啟動` : '區網服務未啟動';
   $('serviceDot').style.background = running ? '' : '#ff8494';
   $('receiveFolder').textContent = `接收資料夾：${state.receiveDir || '—'}`;
-  renderPage(); renderProfiles(state.connection);
+  renderPage(); renderProfiles(state.connection); renderRemote(state.remote);
   $('idleView').classList.toggle('hidden', Boolean(state.active));
   $('activeView').classList.toggle('hidden', !state.active);
   clearInterval(countdownTimer);
-  if (!state.active) return;
+  if (!state.active) {return;}
   $('qrImage').src = state.qrDataUrl; $('pairLink').textContent = state.url;
-  renderOutgoing(state.files || []); renderClients(state.clients || []); renderReceived(state.received || []);
+  renderOutgoing(state.files || []);
+  renderClients(state.clients || []);
+  renderReceived(state.received || []);
   updateCountdown(); countdownTimer = setInterval(updateCountdown, 1000);
 }
 
 async function addDroppedFiles(files) {
   if (!state?.active) { toast('請先建立傳輸，再加入檔案。'); return; }
-  if (!files?.length) return;
+  if (!files?.length) {return;}
   try { toast('正在處理檔案；資料夾會先壓縮為 ZIP。'); await window.lanlift.addDroppedFiles([...files]); toast('已加入傳送佇列。'); } catch (error) { toast(error?.message || '無法加入這些檔案或資料夾。'); }
 }
 
 $('createBtn').addEventListener('click', () => window.lanlift.createSession());
 $('endBtn').addEventListener('click', () => window.lanlift.endSession());
+$('createRemoteBtn').addEventListener('click', async () => {
+  try { await window.lanlift.createRemoteSession(); toast('遠端傳輸已建立。'); } catch (error) { toast(error?.message || '無法建立遠端傳輸。'); }
+});
+$('endRemoteBtn').addEventListener('click', () => window.lanlift.endRemoteSession());
 $('pickBtn').addEventListener('click', () => window.lanlift.pickFiles());
 $('copyLinkBtn').addEventListener('click', async () => { try { await navigator.clipboard.writeText(state.url); toast('連線網址已複製。'); } catch { toast('無法複製，請直接掃描 QR Code。'); } });
 $('settingsBtn').addEventListener('click', () => window.lanlift.chooseReceiveDirectory());
@@ -171,8 +214,8 @@ $('serverForm').addEventListener('submit', async (event) => {
 });
 
 const dropZone = $('dropZone');
-for (const eventName of ['dragenter', 'dragover']) dropZone.addEventListener(eventName, (event) => { event.preventDefault(); dropZone.classList.add('dragging'); });
-for (const eventName of ['dragleave', 'drop']) dropZone.addEventListener(eventName, (event) => { event.preventDefault(); dropZone.classList.remove('dragging'); });
+for (const eventName of ['dragenter', 'dragover']) {dropZone.addEventListener(eventName, (event) => { event.preventDefault(); dropZone.classList.add('dragging'); });}
+for (const eventName of ['dragleave', 'drop']) {dropZone.addEventListener(eventName, (event) => { event.preventDefault(); dropZone.classList.remove('dragging'); });}
 dropZone.addEventListener('drop', (event) => addDroppedFiles(event.dataTransfer.files));
 
 window.lanlift.onSessionUpdate(render);

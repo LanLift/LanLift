@@ -16,5 +16,9 @@ contextBridge.exposeInMainWorld('lanlift', {
   saveServerProfile: (profile) => ipcRenderer.invoke('save-server-profile', profile),
   removeServerProfile: (id) => ipcRenderer.invoke('remove-server-profile', id),
   setConnectionMode: (mode, profileId) => ipcRenderer.invoke('set-connection-mode', mode, profileId),
-  onSessionUpdate: (callback) => ipcRenderer.on('session-update', (_event, state) => callback(state))
+  createRemoteSession: () => ipcRenderer.invoke('create-remote-session'),
+  endRemoteSession: () => ipcRenderer.invoke('end-remote-session'),
+  approveRemote: (memberId, approved) => ipcRenderer.invoke('approve-remote', memberId, approved),
+  sendRemoteFiles: (filePaths) => ipcRenderer.invoke('send-remote-files', filePaths),
+  onSessionUpdate: (callback) => ipcRenderer.on('session-update', (_event, state) => callback(state)),
 });

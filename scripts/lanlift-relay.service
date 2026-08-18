@@ -1,0 +1,19 @@
+[Unit]
+Description=LanLift public relay server (signaling + relay)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=lanlift
+Group=lanlift
+EnvironmentFile=/etc/lanlift-relay.env
+ExecStart=/usr/bin/node /opt/lanlift-relay/relay/server.js --config /etc/lanlift/relay.json
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+
+[Install]
+WantedBy=multi-user.target

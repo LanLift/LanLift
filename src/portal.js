@@ -34,13 +34,19 @@ function portalHtml(token) {
 <section id="transfer" class="hidden">
   <div class="card">
     <div class="pill"><span class="dot"></span><span id="expires">已建立安全連線</span></div>
-    <h2>從電腦接收</h2><p>點選下載，即可將檔案儲存到此裝置。</p>
-    <div id="downloads" class="files"><p>Windows 尚未加入任何檔案。</p></div>
+    <h2>從主機接收</h2><p>點選下載，即可將檔案儲存到此裝置。</p>
+    <div id="downloads" class="files"><p>主機尚未加入任何檔案。</p></div>
+  </div>
+  <div class="card hidden" id="peerCard" style="margin-top:14px">
+    <h2>其他裝置</h2><p>此傳輸支援裝置互傳：選擇傳送目標後，檔案會暫存於主機並通知對方下載。</p>
+    <div id="peers" class="files"></div>
   </div>
   <div class="card" style="margin-top:14px">
-    <h2>傳送到電腦</h2><p>所選檔案會直接經由目前 Wi-Fi 傳輸至 Windows 的 LanLift 資料夾。</p>
-    <label class="file-label">選取要上傳的檔案<input id="picker" type="file" multiple></label>
-    <div id="uploadProgress" class="progress-wrap hidden"><div class="progress-copy"><span id="uploadName">準備上傳</span><span id="uploadPct">0%</span></div><div class="bar"><i id="uploadBar"></i></div></div>
+    <h2>傳送檔案</h2><p>所選檔案會直接經由目前連線傳輸至主機或指定的其他裝置。</p>
+    <label for="target">傳送目標</label>
+    <select id="target" style="width:100%;border:1px solid #31425c;background:#0b1422;border-radius:12px;color:#edf4ff;padding:13px;font-size:16px;outline:none"><option value="">主機</option></select>
+    <label class="file-label">選取要傳送的檔案<input id="picker" type="file" multiple></label>
+    <div id="uploadProgress" class="progress-wrap hidden"><div class="progress-copy"><span id="uploadName">準備傳送</span><span id="uploadPct">0%</span></div><div class="bar"><i id="uploadBar"></i></div></div>
     <div id="uploadError" class="error hidden"></div>
   </div>
 </section>
@@ -57,7 +63,7 @@ function portalHtml(token) {
   const setScreen = name => ['join','waiting','transfer'].forEach(x => $(x).classList.toggle('hidden', x !== name));
   const makeId = () => crypto.getRandomValues(new Uint8Array(16)).reduce((s,v)=>s+v.toString(16).padStart(2,'0'),'');
   async function pair() {
-    const name = $('name').value.trim() || 'Apple 裝置';
+    const name = $('name').value.trim() || '行動裝置';
     $('joinBtn').disabled=true; message('joinError','');
     try {
       if (!clientId) clientId = makeId();
@@ -68,18 +74,29 @@ function portalHtml(token) {
   }
   function render(data) {
     const seconds=Math.max(0,Math.ceil((data.expiresAt-Date.now())/1000)); $('expires').textContent='連線有效期剩餘 ' + Math.floor(seconds/60)+':'+String(seconds%60).padStart(2,'0');
+    // 裝置互傳：其他已核准裝置清單
+    const peers = data.peers || []; const peerCard=$('peerCard'); const peerList=$('peers'); const target=$('target');
+    peerCard.classList.toggle('hidden', !peers.length);
+    if (peers.length) {
+      peerList.replaceChildren();
+      peers.forEach(peer => { const row=document.createElement('div'); row.className='file'; const n=document.createElement('div'); n.className='file-name'; n.textContent=peer.name; row.append(n); peerList.append(row); });
+      const current=target.value;
+      target.replaceChildren(Object.assign(document.createElement('option'),{value:'',textContent:'主機'}), ...peers.map(peer => Object.assign(document.createElement('option'),{value:peer.id,textContent:peer.name})));
+      target.value = peers.some(peer => peer.id === current) ? current : '';
+    } else { target.replaceChildren(Object.assign(document.createElement('option'),{value:'',textContent:'主機'})); }
     const list=$('downloads'); list.replaceChildren();
-    if (!data.files || !data.files.length) { const p=document.createElement('p'); p.textContent='Windows 尚未加入任何檔案。'; list.append(p); return; }
-    data.files.forEach(file => { const row=document.createElement('div'); row.className='file'; const info=document.createElement('div'); info.style.minWidth='0'; const n=document.createElement('div'); n.className='file-name'; n.textContent=file.name; const z=document.createElement('span'); z.className='file-size'; z.textContent=bytes(file.size); info.append(n,z); const link=document.createElement('a'); link.className='download'; link.textContent='下載'; link.href=api+'/download/'+encodeURIComponent(file.id)+'?client='+encodeURIComponent(clientId); row.append(info,link); list.append(row); });
+    if (!data.files || !data.files.length) { const p=document.createElement('p'); p.textContent='主機尚未加入任何檔案。'; list.append(p); return; }
+    data.files.forEach(file => { const row=document.createElement('div'); row.className='file'; const info=document.createElement('div'); info.style.minWidth='0'; const n=document.createElement('div'); n.className='file-name'; n.textContent=file.name; const z=document.createElement('span'); z.className='file-size'; z.textContent=bytes(file.size)+(file.from?' · 來自其他裝置':''); info.append(n,z); const link=document.createElement('a'); link.className='download'; link.textContent='下載'; link.href=api+'/download/'+encodeURIComponent(file.id)+'?client='+encodeURIComponent(clientId); row.append(info,link); list.append(row); });
   }
   async function poll() {
     if (!clientId) return;
-    try { const r=await fetch(api+'/info?client='+encodeURIComponent(clientId),{cache:'no-store'}); const d=await r.json(); if(!r.ok) throw new Error(d.error||'連線失敗'); if(d.state==='approved'){setScreen('transfer');render(d);} else if(d.state==='rejected'){setScreen('join');message('joinError','Windows 端拒絕了此連線。');return;} else {setScreen('waiting');} } catch(e) { setScreen('join'); message('joinError',e.message); return; }
+    try { const r=await fetch(api+'/info?client='+encodeURIComponent(clientId),{cache:'no-store'}); const d=await r.json(); if(!r.ok) throw new Error(d.error||'連線失敗'); if(d.state==='approved'){setScreen('transfer');render(d);} else if(d.state==='rejected'){setScreen('join');message('joinError','主機端拒絕了此連線。');return;} else {setScreen('waiting');} } catch(e) { setScreen('join'); message('joinError',e.message); return; }
     setTimeout(poll, 1800);
   }
   function upload(files) {
     if(!files.length) return; message('uploadError',''); $('uploadProgress').classList.remove('hidden'); const data=new FormData(); [...files].forEach(f=>data.append('files',f)); $('uploadName').textContent='正在傳送 '+files.length+' 個檔案'; $('uploadPct').textContent='0%'; $('uploadBar').style.width='0%';
-    const x=new XMLHttpRequest(); x.open('POST',api+'/upload?client='+encodeURIComponent(clientId)); x.upload.onprogress=e=>{if(e.lengthComputable){const p=Math.round(e.loaded/e.total*100);$('uploadPct').textContent=p+'%';$('uploadBar').style.width=p+'%';}}; x.onload=()=>{let d={};try{d=JSON.parse(x.responseText)}catch{} if(x.status>=200&&x.status<300){$('uploadPct').textContent='完成';$('uploadBar').style.width='100%';$('picker').value='';}else message('uploadError',d.error||'上傳失敗。');}; x.onerror=()=>message('uploadError','網路中斷，請重新嘗試。'); x.send(data);
+    const target=$('target').value; const toParam=target?('&to='+encodeURIComponent(target)):'';
+    const x=new XMLHttpRequest(); x.open('POST',api+'/upload?client='+encodeURIComponent(clientId)+toParam); x.upload.onprogress=e=>{if(e.lengthComputable){const p=Math.round(e.loaded/e.total*100);$('uploadPct').textContent=p+'%';$('uploadBar').style.width=p+'%';}}; x.onload=()=>{let d={};try{d=JSON.parse(x.responseText)}catch{} if(x.status>=200&&x.status<300){$('uploadPct').textContent='完成';$('uploadBar').style.width='100%';$('picker').value='';}else message('uploadError',d.error||'上傳失敗。');}; x.onerror=()=>message('uploadError','網路中斷，請重新嘗試。'); x.send(data);
   }
   $('joinBtn').addEventListener('click',pair); $('name').addEventListener('keydown',e=>{if(e.key==='Enter')pair();}); $('picker').addEventListener('change',e=>upload(e.target.files));
   if(clientId) poll();

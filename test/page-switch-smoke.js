@@ -10,7 +10,7 @@ async function run() {
     width: 900,
     height: 700,
     show: false,
-    webPreferences: { preload: path.join(__dirname, 'mock-preload.js'), contextIsolation: true, nodeIntegration: false }
+    webPreferences: { preload: path.join(__dirname, 'mock-preload.js'), contextIsolation: true, nodeIntegration: false },
   });
   await window.loadFile(path.join(__dirname, '..', 'src', 'index.html'));
   const result = await window.webContents.executeJavaScript(`

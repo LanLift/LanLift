@@ -11,7 +11,7 @@ async function run() {
     width: 759,
     height: 580,
     show: false,
-    webPreferences: { contextIsolation: true, nodeIntegration: false }
+    webPreferences: { contextIsolation: true, nodeIntegration: false },
   });
   await window.loadFile(path.join(__dirname, '..', 'src', 'index.html'));
   const metrics = await window.webContents.executeJavaScript(`

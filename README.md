@@ -1,79 +1,231 @@
 # LanLift
 
-> **同一個 Wi-Fi，直接雙向傳檔。**
+> **快速傳送，留在你的網路裡。**
+>
+> 一款私人檔案傳輸工具：同一 Wi-Fi 直連、行動裝置互傳，以及透過自架中繼伺服器的公網傳輸。
+> 支援 Windows 桌面、Linux 主機（Ubuntu / Kali）與行動瀏覽器（iPhone / Android）。
 
-LanLift 是一個適用於 Windows 10／11 的桌面傳輸程式。它在電腦上建立一個短暫、一次性的區域網路傳輸連線，並顯示 QR Code。iPhone、iPad 或 Mac 只要掃描 QR Code，在 Safari 中取得 Windows 使用者的核准後，即可和電腦雙向收發檔案。檔案不會經過雲端服務或外網中繼。
+## 目錄
 
-Apple 的原生 AirDrop 僅在 iPhone、iPad 與 Mac 間運作；LanLift 因此不嘗試加入原生 AirDrop，而是在同一網路提供相同「掃描、核准、直接傳送」體驗。[1]
-
-## 安裝
-
-| 檔案 | 用途 | 建議對象 |
-|---|---|---|
-| `LanLift Setup 0.1.1.exe` | 標準安裝程式，會建立開始功能表與桌面捷徑。 | 一般使用者。 |
-| `LanLift 0.1.1.exe` | 免安裝可攜版，可直接執行。 | 希望先試用或沒有安裝權限的使用者。 |
-
-請從 `release` 資料夾選取其中一個檔案。在首次啟動時，如 Windows Defender Firewall 詢問是否允許網路存取，請**只勾選「私人網路」**並選擇允許；若拒絕，iPhone、iPad 或 Mac 將無法開啟 QR Code 對應的區網網址。
-
-由於此為未簽署的原型，Windows SmartScreen 可能顯示警示。請只在你信任檔案來源時使用「更多資訊」中的執行選項；正式公開發行前應使用受信任的程式碼簽章憑證。
-
-## 使用方式
-
-| 步驟 | Windows 上的操作 | Apple 裝置上的操作 |
-|---|---|---|
-| 1 | 確認 Windows 電腦與 iPhone、iPad 或 Mac 連上同一個 Wi-Fi。 | 連至同一個 Wi-Fi。 |
-| 2 | 開啟 LanLift，按下 **建立傳輸**。 | 無需安裝 App。 |
-| 3 | 程式顯示 QR Code 與 10 分鐘倒數。 | 使用相機掃描 QR Code，開啟 Safari。iPhone 支援直接從相機辨識 QR Code。[2] |
-| 4 | 畫面顯示對方輸入的裝置名稱後，按下 **允許**。 | 等待 Windows 核准。 |
-| 5 | 在 Windows 將檔案或資料夾拖入分享佇列；資料夾會自動壓縮成 ZIP。 | 下載 Windows 端分享的檔案，或選取檔案上傳。 |
-| 6 | 完成後按 **結束這次傳輸**，或等待 10 分鐘自動到期。 | 網址會立即／到期後失效。 |
-
-傳入 Windows 的檔案預設儲存在 `下載\LanLift`。可從右上角的 **接收資料夾** 變更位置。
-
-## 已實作功能
-
-| 功能 | 說明 |
-|---|---|
-| 一次性 QR 配對 | 每個工作階段使用 256-bit 隨機密鑰，預設 10 分鐘失效，且一次只核准一台 Apple 裝置。 |
-| 雙向直接傳檔 | Windows 端可拖放或選取檔案分享；Apple 裝置可在 Safari 下載或上傳檔案。 |
-| 串流式傳輸 | 檔案直接由來源串流至目的端，不壓縮、不轉碼、不上傳雲端；大型檔案不會整個載入記憶體。 |
-| 使用者核准 | Apple 裝置連線後必須由 Windows 使用者明確允許，才能讀取或上傳檔案。 |
-| 檔案衛生處理 | 上傳檔案會寫入使用者指定的接收資料夾，並處理可能不安全的檔名。 |
-| 即時介面 | Windows 端顯示連線裝置、檔案佇列、接收紀錄及傳輸到期倒數；窄視窗會改為單欄卡片，避免右側內容被裁切。Safari 頁面顯示上傳進度。 |
-| 資料夾 ZIP 傳送 | 拖入或選取資料夾時，程式會在本機建立暫存 ZIP，加入佇列後傳送；移除佇列或結束工作階段時會自動清除該暫存 ZIP。 |
-
-## 速度與網路條件
-
-LanLift 的速度由 Wi-Fi 訊號、路由器、Windows 網卡及裝置儲存速度決定；它不受家用網際網路上傳頻寬影響，因為檔案不離開本地網路。程式採用 Node.js 串流 API，不會將完整檔案讀入記憶體。[3]
-
-請勿使用啟用裝置隔離的訪客 Wi-Fi 或公司網路；這類網路通常會阻止裝置彼此連線。若掃描後無法開啟頁面，請依序確認兩台裝置使用同一個私有 Wi-Fi、Windows 網路設定為「私人」、防火牆已允許 LanLift 私人網路存取，以及 VPN 已暫時停用。
-
-## 安全與限制
-
-LanLift 的首版採用「可信任的同一個私人網路 + 不可猜測的短期 QR 連結 + Windows 明確核准」模式。它**不是**原生 AirDrop 協定，也尚未提供端對端加密、可續傳、資料夾同步、多人傳輸或跨網路傳輸。因此，不應在不可信任的公共 Wi-Fi 上傳送機密資料。
-
-正式產品後續應加入：以 WebCrypto 實作的端對端加密與 QR 驗證碼比對、裝置信任清單、斷點續傳、mDNS Windows 裝置自動發現、可選的 iOS 原生 App 以及程式碼簽章。
-
-## 開發與測試
-
-```bash
-pnpm install
-pnpm test
-pnpm run dist:win
-```
-
-`pnpm test` 會驗證：一次性配對、核准前存取限制、Windows 至 Apple 的檔案下載、Apple 至 Windows 的串流上傳，以及工作階段結束後網址失效。
-
-## 參考資料
-
-[1] [Apple Support：在 Mac 上使用 AirDrop](https://support.apple.com/guide/mac-help/use-airdrop-to-send-items-to-nearby-devices-mh35868/mac)
-
-[2] [Apple Support：使用 iPhone 掃描 QR Code](https://support.apple.com/guide/iphone/scan-a-qr-code-iphe8bda8762/ios)
-
-[3] [Node.js：Stream API](https://nodejs.org/api/stream.html)
+1. [專案簡介](#專案簡介)
+2. [主要功能](#主要功能)
+3. [安裝](#安裝)
+4. [直接連線：同一 Wi-Fi 傳檔](#直接連線同一-wi-fi-傳檔)
+5. [行動裝置互傳](#行動裝置互傳)
+6. [Linux 主機（Ubuntu / Kali）](#linux-主機ubuntu--kali)
+7. [公網傳輸：自架中繼伺服器](#公網傳輸自架中繼伺服器)
+8. [安全與隱私](#安全與隱私)
+9. [開發](#開發)
+10. [Roadmap](#roadmap)
+11. [授權](#授權)
 
 ---
 
-作者：Manus AI  
-版本：0.1.1  
-日期：2026-08-18
+## 專案簡介
+
+LanLift 讓 Windows 電腦、Linux 主機、iPhone 與 Android 裝置之間以**一次性配對**建立短暫傳輸空間，雙向傳送檔案：
+
+- **直接連線**：同一 Wi-Fi 內以 QR Code 配對，檔案只在區域網路傳輸。
+- **行動互傳**：iPhone ↔ Android、Android ↔ Android，經主機協調的儲存轉送（store-and-forward）。
+- **公網傳輸**：透過自架中繼伺服器（訊號 + 中繼 + TURN 協調），優先 WebRTC 直連，失敗自動回退中繼，全程端對端加密。
+
+> **限制說明：** LanLift 不加入 Apple 原生 AirDrop。Apple 裝置以 QR Code 開啟 LanLift 的傳輸頁面（Safari）。iPhone ↔ iPhone 請直接使用 AirDrop。公網傳輸需要部署 LanLift 相容的中繼伺服器（詳見 `docs/PUBLIC-TRANSFER.md`）。
+
+---
+
+## 主要功能
+
+| 功能 | 說明 |
+|---|---|
+| **直接連線** | Windows／Linux 主機與 iPhone、Android 位於同一可互通 Wi-Fi 時，以一次性 QR Code 建立連線。 |
+| **行動互傳** | 主機建立「行動互傳」傳輸後，多台行動裝置可互相傳檔（iPhone → Android、Android → Android）。 |
+| **公網傳輸** | 自架中繼伺服器：訊號轉發、WebRTC 協調與中繼資料面；WebRTC 直連優先、TURN／中繼兜底。 |
+| **端對端加密** | ECDH（P-256）+ HKDF + AES-256-GCM；中繼伺服器只看到密文。 |
+| **雙向傳檔** | 主機可分享檔案供裝置下載；裝置可上傳至主機或指定裝置。 |
+| **資料夾自動 ZIP** | 拖入或選取資料夾時在本機壓縮為 ZIP 再加入佇列。 |
+| **連線核准** | 新裝置必須經主機明確允許；未核准裝置無法收發任何資料。 |
+| **串流式傳輸** | LAN 檔案以串流方式傳送；公網傳輸以 64 KiB 分塊 + SHA-256 校驗 + ACK 重試。 |
+| **頻寬限制** | 中繼伺服器以令牌桶對每通道限速（預設 2 MiB/s，可設定）。 |
+| **自訂伺服器紀錄** | 桌面端可新增、編輯、選用與刪除訊號與 TURN 伺服器設定；憑證以系統資料保護保存。 |
+| **Linux 管理頁面** | Linux 主機提供本機網頁管理介面（建立傳輸、核准、加入檔案、切換接收資料夾）。 |
+
+---
+
+## 安裝
+
+### Windows 桌面版
+
+1. 前往 **Releases** 下載最新 `LanLift Setup x.y.z.exe`。
+2. 執行安裝程式；若 Windows Defender Firewall 詢問網路權限，請只允許 **私人網路**。
+3. 執行 `pnpm start` 啟動（開發模式），或使用安裝版捷徑。
+
+### Linux 主機（Ubuntu 22.04+ / Kali Rolling）
+
+```bash
+sudo bash scripts/install-linux.sh
+```
+
+安裝完成後：管理頁面 `http://127.0.0.1:8899/admin`、systemd 服務 `lanlift`。詳見 [docs/LINUX.md](docs/LINUX.md)。
+
+### 公網中繼伺服器
+
+```bash
+sudo bash scripts/install-relay.sh
+```
+
+詳見 [docs/PUBLIC-TRANSFER.md](docs/PUBLIC-TRANSFER.md)。
+
+---
+
+## 直接連線：同一 Wi-Fi 傳檔
+
+1. 在桌面端或 Linux 管理頁選擇 **直接連線**，按下 **建立傳輸**。
+2. LanLift 產生有效期 10 分鐘的 QR Code（Linux 端亦可列印文字 QR 與網址）。
+3. 行動裝置掃描 QR Code，開啟傳輸頁面並輸入裝置名稱。
+4. 主機核准後即可雙向傳檔；完成後按 **結束這次傳輸**，連線網址立即失效。
+
+---
+
+## 行動裝置互傳
+
+支援 **iPhone → Android** 與 **Android → Android**（不實作 iPhone → iPhone，請使用 AirDrop）。
+
+1. 主機建立傳輸時選擇 **peer（行動互傳）模式**（Linux 管理頁選 `peer`）。
+2. 兩台裝置掃描同一 QR Code 並提出連線請求。
+3. 主機核准兩台裝置後，裝置頁面會出現「其他裝置」區塊與傳送目標選單。
+4. 選擇目標裝置上傳檔案：檔案經主機暫存（主機為協調者），目標裝置於「從主機接收」區塊下載。
+5. 互傳檔案只開放給目標裝置下載；host 模式維持 v0.2.2 單裝置語意，不受影響。
+
+流程與 API 詳見 [docs/MOBILE-TRANSFER.md](docs/MOBILE-TRANSFER.md)。
+
+---
+
+## Linux 主機（Ubuntu / Kali）
+
+- 與 Windows 桌面版共用同一 `TransferServer`，通訊協定完全相容（既有 Windows ↔ 行動裝置傳輸不受影響）。
+- 指令：`node src/linux-host.js --port 8899 --session host --qr`
+- 安裝、systemd 服務、防火牆與解除安裝：詳見 [docs/LINUX.md](docs/LINUX.md)。
+
+---
+
+## 公網傳輸：自架中繼伺服器
+
+LanLift 不使用任何共用或預設免費中繼；跨網路傳輸由你自架的中繼伺服器提供：
+
+| 元件 | 說明 |
+|---|---|
+| **訊號伺服器**（`relay/`） | WSS：裝置註冊、房間建立／加入、核准、WebRTC 協商轉發、ECDH 公鑰交換。 |
+| **中繼資料面** | 已核准成員間的加密區塊轉發；令牌桶限速、區塊大小與累計流量上限。 |
+| **WebRTC 協調** | 端點優先建立 P2P 資料通道（STUN/TURN），逾時自動回退中繼通道。 |
+| **遠端頁面** | 中繼伺服器託管 `/` 頁面，行動裝置輸入 6 位數房間代碼加入。 |
+
+桌面端在「遠端連線」頁選擇自訂伺服器後按 **建立遠端傳輸**；行動裝置開啟 `https://<你的伺服器>/` 輸入房間代碼。全程端對端加密，詳見 [docs/PUBLIC-TRANSFER.md](docs/PUBLIC-TRANSFER.md) 與 [docs/PROTOCOL.md](docs/PROTOCOL.md)。
+
+---
+
+## 安全與隱私
+
+| 項目 | LanLift 行為 |
+|---|---|
+| **配對授權** | 高熵一次性配對密鑰（256-bit）+ 主機明確核准；未核准裝置無法收發。 |
+| **端對端加密** | 公網傳輸使用 ECDH（P-256）+ HKDF + AES-256-GCM；每區塊獨立 IV，中繼不可讀。 |
+| **傳輸完整性** | 每 64 KiB 區塊附 SHA-256 校驗；AES-GCM 認證標籤同時提供完整性保證。 |
+| **伺服器認證** | 中繼伺服器可設定 `serverToken`，拒絕未授權裝置註冊；遠端頁面建議僅經 WSS/HTTPS 提供。 |
+| **頻寬與流量上限** | 每通道令牌桶限速、單一區塊 256 KiB 上限、累計 200 GiB 上限（可設定）。 |
+| **憑證保存** | 桌面端伺服器憑證以 Windows 系統資料保護保存；Linux 端管理權杖僅限本機迴路使用。 |
+
+---
+
+## 開發
+
+### 環境需求
+
+| 工具 | 建議版本 |
+|---|---|
+| Node.js | 22 或更新 |
+| pnpm | 9 或更新（`corepack enable pnpm`） |
+| 桌面版 | Windows 10/11（Electron） |
+| Linux 主機 | Ubuntu 22.04+ / Kali Rolling |
+
+### 常用指令
+
+```bash
+pnpm install          # 安裝依賴
+pnpm start            # Windows 桌面版（Electron）
+pnpm start:linux      # Linux 主機（headless + 管理頁面）
+pnpm start:relay      # 公網中繼伺服器
+pnpm test             # 全部測試（node:test）
+pnpm test:coverage    # 測試 + 覆蓋率（≥ 95%）
+pnpm lint             # ESLint（0 錯誤 0 警告）
+pnpm build:web        # 打包中繼伺服器的遠端頁面 bundle
+pnpm run dist:setup   # 建立 Windows 安裝程式（輸出至 release/）
+```
+
+### 專案結構
+
+```text
+LanLift/
+├── src/                       # 共享程式碼（Node.js / Electron / 瀏覽器）
+│   ├── main.js                # Electron 主程序與安全 IPC（含遠端傳輸）
+│   ├── preload.js             # 受限的桌面橋接層
+│   ├── renderer.js            # 直接／遠端雙頁互動
+│   ├── transfer-server.js     # 區域網路傳輸服務（LAN + 行動互傳 + Linux 管理 API）
+│   ├── server-profiles.js     # 自訂伺服器加密保存與歷史紀錄
+│   ├── portal.js              # 行動裝置 LAN 傳輸頁面（含互傳 UI）
+│   ├── admin-page.js          # Linux 主機網頁管理介面
+│   ├── linux-host.js          # Linux headless 主機入口（CLI）
+│   ├── crypto.js              # ECDH + HKDF + AES-GCM 端對端加密（跨端）
+│   ├── chunker.js             # 分塊、SHA-256 校驗、ACK 重試
+│   ├── protocol.js            # 訊號協定與房間註冊表
+│   ├── relay-client.js        # 訊號／中繼客戶端（Node 與瀏覽器通用）
+│   ├── remote-transfer.js     # 遠端傳輸協調器（P2P 優先、中繼兜底）
+│   ├── remote-host.js         # 桌面／Linux 主機的遠端傳輸整合
+│   ├── remote-web.js          # 行動遠端頁面邏輯（可注入 DOM 測試）
+│   ├── remote-web-entry.js    # 瀏覽器入口（esbuild 打包）
+│   ├── event-emitter.js       # 跨端迷你 EventEmitter
+│   ├── index.html             # 桌面介面
+│   └── styles.css             # 響應式 UI 樣式
+├── relay/                     # 公網中繼伺服器
+│   ├── server.js              # HTTP(S) + WSS 入口、健康檢查、遠端頁面
+│   ├── signaling.js           # 訊號伺服器（房間、核准、轉發）
+│   ├── relay-hub.js           # 中繼資料面（限速、大小與流量上限）
+│   ├── bandwidth.js           # 令牌桶流量整形
+│   ├── config.example.json    # 設定範例
+│   ├── remote.html            # 行動遠端傳輸頁面
+│   └── remote-web.js          # 打包產物（pnpm build:web）
+├── scripts/                   # Linux 安裝腳本與 systemd 單元
+│   ├── install-linux.sh       # Ubuntu / Kali 主機安裝
+│   ├── uninstall-linux.sh     # 解除安裝
+│   ├── install-relay.sh       # 中繼伺服器安裝
+│   ├── lanlift.service        # 主機 systemd 單元
+│   └── lanlift-relay.service  # 中繼 systemd 單元
+├── test/                      # 單元與整合測試（node:test）
+├── docs/                      # 架構、協定、部署與測試文件
+├── build/installer.nsh        # Windows 單版本升級提示
+└── release/                   # Windows 安裝程式輸出
+```
+
+---
+
+## Roadmap
+
+- [x] Windows 與 Apple 裝置的同網路雙向傳檔
+- [x] 一次性 QR Code 與 Windows 端連線核准
+- [x] 資料夾自動壓縮為 ZIP
+- [x] 直接／遠端雙頁導覽與自訂伺服器紀錄
+- [x] Linux 主機（Ubuntu / Kali）：headless 服務、網頁管理、安裝腳本
+- [x] 行動裝置互傳（iPhone → Android、Android → Android）
+- [x] 自架中繼伺服器（訊號 + 中繼 + WebRTC 協調）與端對端加密
+- [x] 分塊傳輸、SHA-256 校驗、ACK 重試與頻寬限制
+- [ ] iPhone／iPad 原生用戶端與已配對裝置自動發現
+- [ ] Windows 程式碼簽章與自動更新
+
+---
+
+## 貢獻
+
+歡迎提交 Issue、功能建議與 Pull Request（以 `develop` 為目標分支）。回報問題時請附上 LanLift 版本、作業系統、網路類型、可重現步驟與非敏感的錯誤資訊。
+
+## 授權
+
+本專案採用 [MIT License](LICENSE)。

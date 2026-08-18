@@ -8,6 +8,8 @@ export default [
       'release/**',
       'dist/**',
       '**/node_modules/**',
+      'relay/remote-web.js', // esbuild 產物
+      'pnpm-lock.yaml',
     ],
   },
   js.configs.recommended,
@@ -15,12 +17,15 @@ export default [
     files: ['**/*.js'],
     languageOptions: {
       ecmaVersion: 2023,
-      sourceType: 'module',
+      // LanLift 全部原始碼為 CommonJS（package.json 未宣告 type: module）
+      sourceType: 'commonjs',
       globals: {
-        // Node.js 全域（lib/server/desktop 與測試）
+        // Node.js 全域（src/relay/test）
         process: 'readonly',
         Buffer: 'readonly',
         console: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
         setTimeout: 'readonly',
         clearTimeout: 'readonly',
         setInterval: 'readonly',
@@ -34,7 +39,9 @@ export default [
         structuredClone: 'readonly',
         AbortController: 'readonly',
         crypto: 'readonly',
-        // 瀏覽器端（web/ 與 desktop renderer）
+        btoa: 'readonly',
+        atob: 'readonly',
+        // 瀏覽器端（行動網頁與 desktop renderer）
         window: 'readonly',
         document: 'readonly',
         navigator: 'readonly',
@@ -89,18 +96,20 @@ export default [
     },
   },
   {
-    // 純瀏覽器檔案：node 全域不可用
-    files: ['web/**/*.js'],
-    languageOptions: {
-      globals: {
-        process: 'off',
-        Buffer: 'off',
-      },
+    // 測試檔案允許較長的行（描述字串）
+    files: ['test/**/*.js'],
+    rules: {
+      'max-len': 'off',
+      'no-console': 'off',
     },
   },
   {
-    // 測試檔案允許較長的行（描述字串）與 console
-    files: ['test/**/*.js'],
+    // eslint.config.js 本身是 ESM（必須放在最後以覆蓋上面的 commonjs）
+    files: ['eslint.config.js'],
+    languageOptions: {
+      sourceType: 'module',
+      ecmaVersion: 2023,
+    },
     rules: {
       'max-len': 'off',
       'no-console': 'off',

@@ -6,7 +6,7 @@ const fakeState = {
   active: false,
   receiveDir: 'C:\\Users\\Test\\Downloads\\LanLift',
   server: { port: 62316 },
-  connection: { connectionMode: 'direct', activeProfileId: null, profiles: [], secureStorageAvailable: true }
+  connection: { connectionMode: 'direct', activeProfileId: null, profiles: [], secureStorageAvailable: true },
 };
 
 contextBridge.exposeInMainWorld('lanlift', {
@@ -23,5 +23,5 @@ contextBridge.exposeInMainWorld('lanlift', {
   saveServerProfile: async () => fakeState.connection,
   removeServerProfile: async () => fakeState.connection,
   setConnectionMode: async (mode) => { fakeState.connection.connectionMode = mode; return fakeState.connection; },
-  onSessionUpdate: () => {}
+  onSessionUpdate: () => {},
 });

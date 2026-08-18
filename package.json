@@ -1,9 +1,57 @@
 {
-  "name": "demo-repo",
-  "version": "0.2.0",
-  "description": "A sample package.json",
-  "dependencies": {
-    "@primer/css": "17.0.1"
+  "name": "lanlift",
+  "version": "0.2.2",
+  "description": "Private LAN file transfer with one-time QR pairing",
+  "main": "src/main.js",
+  "author": "LanLift",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "test": "node test/server.test.js && node test/server-profiles.test.js",
+    "dist:win": "electron-builder --win nsis portable --x64",
+    "dist:setup": "electron-builder --win nsis --x64",
+    "pack:dir": "electron-builder --dir --win --x64"
   },
-  "license": "MIT"
+  "build": {
+    "appId": "im.lanlift.desktop",
+    "productName": "LanLift",
+    "electronLanguages": ["zh-TW", "en-US"],
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "src/**/*",
+      "package.json",
+      "README.md"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "include": "build/installer.nsh",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "LanLift"
+    }
+  },
+  "dependencies": {
+    "archiver": "^7.0.1",
+    "busboy": "^1.6.0",
+    "qrcode": "^1.5.4"
+  },
+  "devDependencies": {
+    "electron": "^39.2.6",
+    "electron-builder": "^26.0.12"
+  }
 }

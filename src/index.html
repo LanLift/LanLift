@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LanLift</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand"><div class="brand-mark">L</div><div><strong>LanLift</strong><span>LAN FILE TRANSFER</span></div></div>
+      <div class="side-status"><span class="status-dot" id="serviceDot"></span><span id="serviceStatus">正在啟動區網服務</span></div>
+      <nav class="side-nav" aria-label="LanLift 導覽"><button id="directNavBtn" class="side-nav-btn active"><span class="nav-symbol">↗</span><span>直接連線</span></button><button id="serverNavBtn" class="side-nav-btn"><span class="nav-symbol">⌁</span><span>遠端連線</span></button></nav>
+      <div class="side-note"><strong id="pageSideTitle">直接連線</strong><p id="pageSideDescription">檔案在同一個 Wi‑Fi 網路內直接傳送，不經過雲端。</p></div>
+      <div class="side-foot">v0.2.2 · Windows Preview</div>
+    </aside>
+
+    <main class="content">
+      <header class="topbar"><div><p class="eyebrow" id="pageKicker">一次性安全連線</p><h1 id="pageHeading">快速傳送，留在你的網路裡。</h1></div><div class="top-actions"><button class="quiet-btn" id="settingsBtn">接收資料夾</button></div></header>
+
+      <section id="directPage">
+        <section id="idleView" class="hero-card">
+          <div class="hero-visual" aria-hidden="true"><div class="orbit orbit-a"></div><div class="orbit orbit-b"></div><div class="device-stack"><div class="laptop"><i></i></div><div class="phone"><i></i></div></div></div>
+          <div class="hero-copy"><div class="hero-icon">↗</div><p class="eyebrow">準備就緒</p><h2>建立一個短暫傳輸</h2><p>產生 QR Code，讓 iPhone、iPad 或 Mac 在同一 Wi‑Fi 下掃描。對方提出請求後，由你決定是否允許連線。</p><button class="primary-btn" id="createBtn">建立傳輸</button></div>
+        </section>
+
+        <section id="activeView" class="active-grid hidden">
+          <div class="main-column">
+            <article class="panel session-panel"><div class="panel-head"><div><p class="eyebrow">目前傳輸</p><h2>掃描以建立連線</h2></div><div class="countdown"><span class="status-dot warm"></span><span id="countdown">10:00</span></div></div><div class="pairing-row"><div class="qr-card"><img id="qrImage" alt="LanLift 配對 QR Code" /></div><div class="pairing-copy"><p>使用 iPhone、iPad 或 Mac 的相機掃描此 QR Code。對方會在瀏覽器中請求加入，待你核准後即可雙向傳檔。</p><div class="link-box"><span id="pairLink">產生中…</span><button id="copyLinkBtn" title="複製連結">複製</button></div><button class="danger-link" id="endBtn">結束這次傳輸</button></div></div></article>
+            <article class="panel"><div class="panel-head"><div><p class="eyebrow">你要傳送的檔案</p><h2>分享佇列 <span class="file-count" id="outgoingCount"></span></h2></div><button class="quiet-btn small" id="pickBtn">加入檔案或資料夾</button></div><div id="dropZone" class="drop-zone"><div class="drop-icon">＋</div><strong>將檔案或資料夾拖曳到這裡</strong><span>資料夾會先自動壓縮為 ZIP，再加入傳送佇列</span></div><div id="outgoingFiles" class="file-list"></div><button id="showMoreFilesBtn" class="text-btn file-more hidden">顯示全部檔案</button></article>
+          </div>
+          <aside class="right-column"><article class="panel compact"><p class="eyebrow">連線裝置</p><h2>等待核准</h2><div id="clients" class="clients"><p class="empty-note">尚未有裝置掃描 QR Code。</p></div></article><article class="panel compact"><div class="panel-head"><div><p class="eyebrow">從裝置收到</p><h2>接收紀錄</h2></div><button class="icon-btn" id="openFolderBtn" title="開啟接收資料夾">↗</button></div><div id="receivedFiles" class="file-list"><p class="empty-note">傳入檔案會儲存在指定資料夾。</p></div></article></aside>
+        </section>
+      </section>
+
+      <section id="remotePage" class="remote-page hidden">
+        <article class="remote-hero"><div class="remote-hero-icon">⌁</div><div><p class="eyebrow">你的遠端傳輸設定</p><h2>使用自己的伺服器連線</h2><p>儲存並選擇你管理的訊號與 TURN 伺服器。資料與憑證只會保留在這台 Windows 電腦；不使用任何共用或預設中繼。</p></div></article>
+        <article class="panel" id="remoteSessionPanel"><div class="panel-head"><div><p class="eyebrow">跨網路傳輸</p><h2>遠端傳輸</h2></div></div><div id="remoteIdle"><p class="server-help">選擇自訂伺服器後，按「建立遠端傳輸」產生 6 位數房間代碼。行動裝置開啟中繼伺服器的遠端頁面並輸入代碼，核准後即可互傳；優先 WebRTC 直連，失敗自動走中繼，全程端對端加密。</p><button type="button" class="primary-btn" id="createRemoteBtn">建立遠端傳輸</button></div><div id="remoteActive" class="hidden"><div class="room-code-box"><span>房間代碼</span><strong id="remoteRoomCode">------</strong><span id="remoteTransport" class="server-help">正在協商連線…</span></div><div class="panel-head"><div><p class="eyebrow">連線裝置</p><h2>等待核准</h2></div></div><div id="remotePeers" class="clients"><p class="empty-note">尚未有裝置加入。</p></div><button type="button" class="danger-link" id="endRemoteBtn">結束遠端傳輸</button></div></article>
+        <div class="remote-grid">
+          <article class="panel"><div class="panel-head"><div><p class="eyebrow">新增或編輯</p><h2>伺服器設定</h2></div><button type="button" id="resetServerForm" class="quiet-btn small">新增設定</button></div><form id="serverForm" class="server-form"><input type="hidden" id="profileId" /><label>名稱<input id="profileName" maxlength="80" placeholder="例如：公司中繼站" required /></label><label>訊號伺服器網址<input id="signalingUrl" type="url" placeholder="wss://relay.example.com" required /></label><label>TURN 位址<textarea id="turnUrls" rows="3" placeholder="turns:relay.example.com:5349?transport=tcp" required></textarea><small>可用逗號或換行輸入多個 turn:／turns: 位址。</small></label><label>使用者名稱<input id="turnUsername" placeholder="選填" /></label><label>憑證或短期權杖<input id="turnCredential" type="password" placeholder="新增時填入；編輯時留白可保留原憑證" /></label><div class="form-actions"><button type="submit" class="primary-btn">儲存伺服器</button></div></form></article>
+          <article class="panel server-history"><div class="panel-head"><div><p class="eyebrow">已儲存連線</p><h2>伺服器紀錄 <span id="profileCount" class="file-count"></span></h2></div></div><p class="server-help">選擇一個伺服器作為遠端連線設定；憑證會使用 Windows 系統資料保護保存。</p><div id="serverProfiles" class="profile-list"><p class="empty-note">尚未儲存自訂伺服器。</p></div></article>
+        </div>
+      </section>
+
+      <section class="footer-bar"><span id="receiveFolder">接收資料夾：—</span><button id="openFolderText">開啟資料夾</button></section>
+    </main>
+  </div>
+  <div id="toast" class="toast hidden"></div>
+  <script src="renderer.js"></script>
+</body>
+</html>

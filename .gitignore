@@ -1,0 +1,11 @@
+node_modules/
+coverage/
+release/
+dist/
+*.log
+.env
+config.local.json
+.DS_Store
+desktop/node_modules/
+server/node_modules/
+lib/node_modules/

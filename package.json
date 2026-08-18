@@ -1,9 +1,77 @@
 {
-  "name": "demo-repo",
-  "version": "0.2.0",
-  "description": "A sample package.json",
-  "dependencies": {
-    "@primer/css": "17.0.1"
+  "name": "lanlift",
+  "version": "0.3.0",
+  "description": "Private cross-platform file transfer: LAN (Windows/Linux desktop + mobile), mobile-to-mobile, and public internet (WebRTC + relay + UDP hole punching)",
+  "main": "src/main.js",
+  "author": "LanLift",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "start:linux": "node src/linux-host.js",
+    "start:relay": "node relay/server.js",
+    "test": "node --test test/*.test.js",
+    "test:coverage": "node --test --experimental-test-coverage test/*.test.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "check": "npm run lint && npm run test:coverage",
+    "build:web": "esbuild src/remote-web-entry.js --bundle --platform=browser --format=iife --outfile=relay/remote-web.js",
+    "dist:win": "electron-builder --win nsis portable --x64",
+    "dist:setup": "electron-builder --win nsis --x64",
+    "pack:dir": "electron-builder --dir --win --x64"
   },
-  "license": "MIT"
+  "build": {
+    "appId": "im.lanlift.desktop",
+    "productName": "LanLift",
+    "electronLanguages": [
+      "zh-TW",
+      "en-US"
+    ],
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "src/**/*",
+      "relay/**/*",
+      "package.json",
+      "README.md"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "include": "build/installer.nsh",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "LanLift"
+    }
+  },
+  "dependencies": {
+    "archiver": "^7.0.1",
+    "busboy": "^1.6.0",
+    "qrcode": "^1.5.4",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "electron": "^39.2.6",
+    "electron-builder": "^26.0.12",
+    "esbuild": "^0.28.2",
+    "eslint": "^9.17.0",
+    "jsdom": "^25.0.1"
+  }
 }

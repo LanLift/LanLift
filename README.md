@@ -1,8 +1,230 @@
-![Auto Assign](https://github.com/LanLift/demo-repository/actions/workflows/auto-assign.yml/badge.svg)
+# LanLift
 
-![Proof HTML](https://github.com/LanLift/demo-repository/actions/workflows/proof-html.yml/badge.svg)
+> **快速傳送，留在你的網路裡。**
+>
+> 一款為 Windows 設計、提供接近 AirDrop 操作體驗的私人檔案傳輸工具。
 
-# Welcome to your organization's demo respository
-This code repository (or "repo") is designed to demonstrate the best GitHub has to offer with the least amount of noise.
+## 目錄
 
-The repo includes an `index.html` file (so it can render a web page), two GitHub Actions workflows, and a CSS stylesheet dependency.
+1. [專案簡介](#專案簡介)
+2. [主要功能](#主要功能)
+3. [安裝](#安裝)
+4. [直接連線：同一 Wi-Fi 傳檔](#直接連線同一-wi-fi-傳檔)
+5. [檔案與資料夾傳送](#檔案與資料夾傳送)
+6. [遠端連線：自訂伺服器](#遠端連線自訂伺服器)
+7. [安全與隱私](#安全與隱私)
+8. [開發](#開發)
+9. [Roadmap](#roadmap)
+10. [授權](#授權)
+
+---
+
+## 專案簡介
+
+**LanLift** 是一款面向 Windows 的檔案傳輸應用程式。它可讓 Windows 電腦與 iPhone、iPad 或 Mac 在同一個可互通的 Wi-Fi 網路中建立一次性連線，並雙向傳送檔案。
+
+直接連線模式下，檔案不會先上傳到雲端，而是在本地網路中直接傳輸。應用程式同時提供「遠端連線」頁面，讓使用者保存與管理自己部署的訊號服務及 TURN 中繼設定。
+
+> **限制說明：** LanLift 不會直接加入 Apple 原生 AirDrop。Apple 裝置需要以 QR Code 開啟 LanLift 的本機傳輸頁面。跨網路傳輸需要使用者自行部署相容的訊號服務與 TURN 中繼伺服器。
+
+---
+
+## 主要功能
+
+| 功能 | 說明 |
+|---|---|
+| **直接連線** | Windows、iPhone、iPad 或 Mac 位於同一可互通 Wi-Fi 時，可透過一次性 QR Code 建立連線。 |
+| **雙向傳檔** | Windows 可將檔案提供給 Apple 裝置下載；Apple 裝置也可上傳檔案至 Windows。 |
+| **資料夾自動 ZIP** | 拖入或選取資料夾時，LanLift 會在本機壓縮為 ZIP，再加入傳送佇列。 |
+| **批量檔案摘要** | 檔案佇列預設只顯示前三個檔案與總數，必要時可展開完整清單。 |
+| **連線核准** | 新裝置提出連線時，必須經由 Windows 使用者明確允許。 |
+| **串流式傳輸** | 檔案以串流方式傳送，不會預先完整載入記憶體。 |
+| **直接／遠端雙頁導覽** | 左側欄提供「直接連線」及「遠端連線」兩個主頁；選擇後主內容會隨之切換。 |
+| **自訂伺服器紀錄** | 可新增、編輯、選用與刪除多組訊號服務和 TURN 伺服器設定。 |
+| **安全憑證保存** | 自訂伺服器的憑證會使用 Windows 系統資料保護保存，不以明文顯示在介面中。 |
+| **單版本升級** | 安裝新版時會取代舊版程式，但保留接收資料夾偏好及伺服器設定。 |
+
+---
+
+## 安裝
+
+### 系統需求
+
+| 項目 | 要求 |
+|---|---|
+| 作業系統 | Windows 10 或 Windows 11 |
+| 網路 | 直接連線時，Windows 與 Apple 裝置需位於同一可互通 Wi-Fi 網路 |
+| Apple 裝置 | iPhone、iPad 或 Mac |
+
+### 安裝步驟
+
+1. 前往本儲存庫的 **Releases** 頁面。
+2. 下載最新的 `LanLift Setup x.y.z.exe`。
+3. 執行安裝程式並依照畫面完成安裝。
+4. 若 Windows Defender Firewall 首次詢問網路權限，請只允許 **私人網路**。
+5. 如果電腦已安裝舊版 LanLift，直接執行新版 Setup 即可更新；程式只會保留一個版本，既有設定會保留。
+
+> 目前為 Windows Preview。Windows SmartScreen 可能顯示未簽署程式警示；請只在你信任檔案來源時執行。
+
+---
+
+## 直接連線：同一 Wi-Fi 傳檔
+
+### 使用前確認
+
+| 項目 | 請確認 |
+|---|---|
+| Windows 電腦 | LanLift 已安裝並啟動。 |
+| Apple 裝置 | 已連至與 Windows 相同的 Wi-Fi。 |
+| 網路隔離 | 未使用會隔離裝置的訪客網路或 AP Isolation。 |
+
+### 建立傳輸
+
+1. 在左側欄選擇 **直接連線**。
+2. 按下 **建立傳輸**。
+3. LanLift 會產生一個有效期 10 分鐘的 QR Code。
+4. 使用 iPhone、iPad 或 Mac 的相機掃描 QR Code。
+5. 在 Apple 裝置開啟顯示的本機網頁，輸入裝置名稱並提出連線請求。
+6. 回到 Windows LanLift，在「連線裝置」區塊按下 **允許**。
+7. 核准後，雙方即可開始傳送檔案。
+8. 完成後按 **結束這次傳輸**，連線網址會立即失效。
+
+---
+
+## 檔案與資料夾傳送
+
+### Windows 傳送至 Apple 裝置
+
+傳輸建立並核准裝置後，將檔案拖入分享佇列，或按下 **加入檔案或資料夾**。Apple 裝置頁面會顯示可下載的檔案。
+
+選取資料夾時，LanLift 會先在本機建立暫存 ZIP，並以 ZIP 檔形式加入佇列。當使用者移除項目或結束工作階段時，暫存 ZIP 會自動清除。
+
+### Apple 裝置傳送至 Windows
+
+在已核准的 Apple 裝置傳輸頁面中選取檔案即可上傳。Windows 預設會將檔案存入：
+
+```text
+下載\LanLift
+```
+
+可使用右上角的 **接收資料夾** 按鈕變更儲存位置。
+
+### 大量檔案
+
+分享佇列預設只顯示前三個檔案與檔案總數。按下 **顯示其餘 N 個檔案** 可展開完整清單；按 **收合檔案清單** 可回到摘要顯示。
+
+---
+
+## 遠端連線：自訂伺服器
+
+遠端連線頁面不使用共用或預設的免費中繼服務。使用者可保存自己管理的伺服器資料，適用於個人 VPS、公司內網、NAS 或自架環境。
+
+### 新增伺服器紀錄
+
+在左側欄選擇 **遠端連線**，輸入下列資料後按 **儲存伺服器**。
+
+| 欄位 | 範例 | 說明 |
+|---|---|---|
+| **名稱** | `公司中繼站` | 顯示於已儲存伺服器清單的名稱。 |
+| **訊號伺服器網址** | `wss://relay.example.com` | 用來交換連線協商資料；必須使用安全 WebSocket。 |
+| **TURN 位址** | `turns:relay.example.com:5349?transport=tcp` | NAT 或防火牆阻擋直連時的備援中繼。可填寫多個位址。 |
+| **使用者名稱** | `lanlift-user` | 依伺服器認證策略選填。 |
+| **憑證或短期權杖** | 由伺服器管理員提供 | 會使用 Windows 系統資料保護保存。 |
+
+### 管理歷史紀錄
+
+已儲存的伺服器可執行以下操作：
+
+- **使用：** 將此設定設為目前的遠端連線設定。
+- **編輯：** 修改網址、帳號或其他資料；憑證欄留白時會保留原憑證。
+- **刪除：** 移除該伺服器設定與其保存的憑證。
+
+> 遠端頁面目前已完成設定管理、歷史保存與憑證保護。真正的跨網路資料傳輸需要部署與 LanLift 相容的 WebSocket 訊號服務及 TURN 服務。
+
+---
+
+## 安全與隱私
+
+| 項目 | LanLift 行為 |
+|---|---|
+| **直接連線資料路徑** | 檔案在同一區域網路中直接傳輸，不經雲端。 |
+| **工作階段有效期** | 一次性 QR Code 對應的連線預設 10 分鐘後失效，亦可手動結束。 |
+| **新裝置授權** | 新裝置必須經由 Windows 使用者明確核准。 |
+| **伺服器憑證** | 自訂伺服器憑證以 Windows 系統資料保護保存。 |
+| **公開網路建議** | 在未配置可信任遠端服務前，請勿於公共 Wi-Fi 傳送機密資料。 |
+
+---
+
+## 開發
+
+### 環境需求
+
+| 工具 | 建議版本 |
+|---|---|
+| Node.js | 22 或更新版本 |
+| pnpm | 9 或更新版本 |
+| Windows | Windows 10 或 Windows 11 |
+
+### 本機啟動
+
+```bash
+pnpm install
+pnpm start
+```
+
+### 執行測試
+
+```bash
+pnpm test
+```
+
+測試內容包括一次性配對、上傳、下載、工作階段到期、資料夾 ZIP 壓縮與清理，以及自訂伺服器憑證加密保存、重新載入、選用與刪除。
+
+### 建立 Windows 安裝程式
+
+```bash
+pnpm run dist:setup
+```
+
+建置結果會輸出至 `release/` 目錄。
+
+### 專案結構
+
+```text
+LanLift/
+├── src/
+│   ├── main.js                 # Electron 主程序與安全 IPC
+│   ├── preload.js              # 受限的桌面橋接層
+│   ├── renderer.js             # 直接／遠端雙頁互動
+│   ├── transfer-server.js      # 區域網路傳輸服務
+│   ├── server-profiles.js      # 自訂伺服器加密保存與歷史紀錄
+│   ├── index.html              # 桌面介面
+│   └── styles.css              # 響應式 UI 樣式
+├── test/                       # 傳輸、伺服器與頁面切換測試
+├── build/installer.nsh         # Windows 單版本升級提示
+└── release/                    # Windows 安裝程式輸出
+```
+
+---
+
+## Roadmap
+
+- [x] Windows 與 Apple 裝置的同網路雙向傳檔
+- [x] 一次性 QR Code 與 Windows 端連線核准
+- [x] 資料夾自動壓縮為 ZIP
+- [x] 批量檔案摘要與響應式桌面 UI
+- [x] 直接／遠端雙頁導覽與自訂伺服器紀錄
+- [ ] LanLift 相容的自架訊號伺服器與 TURN 部署範本
+- [ ] 跨網路 WebRTC 資料通道與端對端工作階段加密
+- [ ] iPhone／iPad 原生用戶端與已配對裝置發現
+- [ ] Windows 程式碼簽章與自動更新
+
+---
+
+## 貢獻
+
+歡迎提交 Issue、功能建議與 Pull Request。回報問題時，請附上 LanLift 版本、Windows 版本、網路類型、可重現步驟與非敏感的錯誤資訊。
+
+## 授權
+
+本專案採用 [MIT License](LICENSE)。

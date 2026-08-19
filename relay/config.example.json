@@ -1,0 +1,17 @@
+{
+  "port": 8443,
+  "host": "0.0.0.0",
+  "serverToken": null,
+  "adminToken": null,
+  "heartbeatMs": 30000,
+  "limits": {
+    "bytesPerSecond": 2097152,
+    "burstFactor": 3,
+    "maxChunkBytes": 262144,
+    "maxSessionBytes": 214748364800
+  },
+  "tls": {
+    "cert": "/etc/lanlift/relay/fullchain.pem",
+    "key": "/etc/lanlift/relay/privkey.pem"
+  }
+}

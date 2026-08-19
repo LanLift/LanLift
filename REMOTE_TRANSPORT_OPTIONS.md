@@ -73,6 +73,5 @@ WebRTC 官方文件說明，跨網路時直接 socket 經常不可行，TURN 是
 [3] [Headscale：自架 Tailscale 控制伺服器](https://headscale.net/stable/)
 
 ---
-
-作者：Manus AI  
+ 
 日期：2026-08-18

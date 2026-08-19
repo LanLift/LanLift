@@ -4,6 +4,7 @@
 >
 > 一款私人檔案傳輸工具：同一 Wi-Fi 直連、行動裝置互傳，以及透過自架中繼伺服器的公網傳輸。
 > 支援 Windows 桌面、Linux 主機（Ubuntu / Kali）與行動瀏覽器（iPhone / Android）。
+> 部分編碼由Manus AI生成。
 
 ## 目錄
 

@@ -45,5 +45,4 @@ Apple 公開的 `sendViaAirDrop` API 是 macOS AppKit 中，讓 **Mac 應用程�
 
 ---
 
-作者：Manus AI  
 日期：2026-08-18
